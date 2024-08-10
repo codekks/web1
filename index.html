@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대한민국 지도 - 지역구 검색</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        input {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>대한민국 지도 - 지역구 검색</h1>
+    <p>지역구를 입력하고 검색하세요:</p>
+    <input type="text" id="regionInput" placeholder="예: 강남구">
+    <button onclick="searchRegion()">검색</button>
+
+    <div id="map"></div>
+
+    <!-- Google Maps JavaScript API 로드 -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+
+    <script>
+        let map;
+        let geocoder;
+        let marker;
+
+        // 지도 초기화
+        function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 36.5, lng: 127.5 }, // 대한민국 중심 좌표
+                zoom: 7
+            });
+
+            geocoder = new google.maps.Geocoder();
+        }
+
+        // 지역구 검색 함수
+        function searchRegion() {
+            const region = document.getElementById('regionInput').value;
+
+            if (!region) {
+                alert('지역구를 입력하세요.');
+                return;
+            }
+
+            geocoder.geocode({ address: region + ' 대한민국' }, function(results, status) {
+                if (status === 'OK') {
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(13);
+
+                    if (marker) {
+                        marker.setMap(null); // 기존 마커 제거
+                    }
+
+                    marker = new google.maps.Marker({
+                        map: map,
+                        position: results[0].geometry.location,
+                        title: region
+                    });
+
+                    const infowindow = new google.maps.InfoWindow({
+                        content: `<b>${region}</b><br>${results[0].formatted_address}`
+                    });
+
+                    marker.addListener('click', function() {
+                        infowindow.open(map, marker);
+                    });
+
+                    infowindow.open(map, marker);
+                } else {
+                    alert('해당 지역을 찾을 수 없습니다: ' + status);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
